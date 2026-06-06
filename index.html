@@ -10,18 +10,15 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   body{ font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",sans-serif;
         background:#eef2f7; color:var(--ink); padding:14px; -webkit-text-size-adjust:100%; }
-  .wrap{ max-width:430px; margin:0 auto; }
+  .wrap{ max-width:440px; margin:0 auto; }
   .toolbar{ display:flex; gap:8px; margin-bottom:12px; }
   .btn{ flex:1; border:none; border-radius:12px; padding:14px 10px; font-size:15px;
         font-weight:700; color:#fff; background:var(--navy); cursor:pointer; }
   .btn.alt{ background:#2f80ed; }
   .hint{ font-size:12px; color:var(--sub); margin:10px 4px 0; line-height:1.5; }
 
-  /* ===== 캡처 대상 카드 ===== */
-  #card{ background:#fff; border-radius:18px; overflow:hidden;
-         box-shadow:0 6px 20px rgba(27,42,74,.10); }
-  .head{ background:var(--navy); color:#fff; padding:16px 18px; display:flex;
-         justify-content:space-between; align-items:center; }
+  #card{ background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 6px 20px rgba(27,42,74,.10); }
+  .head{ background:var(--navy); color:#fff; padding:16px 18px; display:flex; justify-content:space-between; align-items:center; }
   .head .t1{ font-size:17px; font-weight:800; display:flex; align-items:center; gap:7px;}
   .dot{ width:11px; height:11px; border-radius:50%; background:var(--sun); display:inline-block;}
   .head .date{ font-size:12px; color:#aebfd6; margin-top:4px; }
@@ -29,22 +26,22 @@
   .head .temps b{ font-size:19px; }
   .head .temps span{ display:block; font-size:11px; color:#aebfd6; }
 
-  .sec{ padding:14px 14px 6px; }
-  .sec .lab{ font-size:13px; font-weight:800; display:flex; align-items:center; gap:7px; margin-bottom:8px;}
-  .sec .lab i{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .bands{ display:flex; gap:0; }
+  .band{ flex:1; font-size:12px; font-weight:700; padding:9px 12px; }
+  .band.rain{ background:#f4f8ff; color:#2f6ad0; }
+  .band.uv{ background:#fff7ec; color:#c47a14; border-left:1px solid #f0e4cf;}
 
+  .sec{ padding:12px 14px 6px; }
   table{ width:100%; border-collapse:collapse; }
-  td{ text-align:center; padding:7px 2px; font-size:13px; border-bottom:1px solid #eef1f6; }
+  td{ text-align:center; padding:7px 1px; font-size:12.5px; border-bottom:1px solid #eef1f6; }
   tr:last-child td{ border-bottom:none; }
-  .hr{ color:var(--sub); font-weight:700; }
+  th{ font-size:12px; color:var(--sub); font-weight:700; padding:4px 1px 8px; }
   .tp{ color:var(--temp); font-weight:800; }
   .sky{ font-size:15px; }
   .pp{ color:var(--rain); font-weight:700; }
   .pp0{ color:var(--sub); }
-  .mm{ color:var(--sub); }
+  .uvv{ font-weight:800; }
   .foot{ padding:10px 16px 16px; font-size:11px; color:var(--sub); }
-  .note{ background:#f4f8ff; color:#2f6ad0; font-size:12px; font-weight:700;
-         padding:8px 12px; border-radius:10px; margin:0 14px 12px; }
 </style>
 </head>
 <body>
@@ -63,24 +60,27 @@
       <div class="temps"><b id="d-temps">19° / 26°</b><span>최저 / 최고</span></div>
     </div>
 
-    <div class="note" id="d-note">오늘 비 예보 없음 · 강수량 0mm</div>
+    <div class="bands">
+      <div class="band rain" id="d-note">오늘 비 예보 없음 · 강수량 0mm</div>
+      <div class="band uv" id="d-uv">☀️ 자외선 불러오는 중…</div>
+    </div>
 
     <div class="sec">
-      <div class="lab"><i style="background:var(--temp)"></i>시간대별 기온 · 하늘 · 강수확률</div>
       <table id="tbl"></table>
     </div>
 
-    <div class="foot">자료: 기상청 동네예보(단기예보) · 송도 사나이 아침 브리핑</div>
+    <div class="foot">자료: 기온·강수 기상청 단기예보 / 자외선 Open-Meteo · 송도 사나이 아침 브리핑</div>
   </div>
 
   <div class="hint">
     • 모바일에서 <b>이미지로 저장</b>을 누르면 카드가 PNG로 다운로드됩니다. 카톡에서 사진 첨부로 기사님들께 공유하세요.<br>
-    • 저장이 안 되면 <b>새 탭에서 보기</b> → 이미지를 <b>길게 눌러 "이미지 저장"</b> 하시면 됩니다.
+    • 저장이 안 되면 <b>새 탭에서 보기</b> → 이미지를 <b>길게 눌러 "이미지 저장"</b> 하시면 됩니다.<br>
+    • 자외선은 열 때마다 실시간으로 갱신됩니다(약 1~2초 소요).
   </div>
 </div>
 
 <script>
-// ===== 예보 데이터 (기상청 단기예보 / 인천 송도) =====
+// ===== 기온/강수 데이터 (기상청 단기예보 / 인천 송도) — 매일 07시 자동 갱신 =====
 const DATA = {
   date: "2026년 6월 7일 (일)",
   tmin: 19, tmax: 26,
@@ -94,40 +94,72 @@ const DATA = {
   ]
 };
 const SKY = {1:"☀️",3:"⛅",4:"☁️"};
+function uvLevel(v){
+  if(v>=11) return ["위험","#7b2fbe"];
+  if(v>=8)  return ["매우높음","#e23b3b"];
+  if(v>=6)  return ["높음","#f2811d"];
+  if(v>=3)  return ["보통","#e3b008"];
+  return ["낮음","#3aa657"];
+}
+const uvByHour = {};
 
 function render(){
   document.getElementById("d-date").textContent = DATA.date;
   document.getElementById("d-temps").textContent = DATA.tmin+"° / "+DATA.tmax+"°";
   document.getElementById("d-note").textContent = DATA.note;
-  let html = "<tr><td class='hr'>시간</td><td class='hr'>기온</td><td class='hr'>하늘</td><td class='hr'>강수확률</td><td class='hr'>강수량</td></tr>";
+  let html = "<tr><th>시간</th><th>기온</th><th>하늘</th><th>자외선</th><th>강수</th></tr>";
   DATA.rows.forEach(r=>{
     const [h,t,s,p,mm]=r;
+    const rain = mm>0 ? ("<span class='pp'>"+p+"% · "+mm+"mm</span>")
+                      : (p>0 ? "<span class='pp'>"+p+"%</span>" : "<span class='pp0'>"+p+"%</span>");
     html += "<tr>"
-      +"<td class='hr'>"+h+"시</td>"
+      +"<td>"+h+"시</td>"
       +"<td class='tp'>"+t+"°</td>"
       +"<td class='sky'>"+(SKY[s]||"")+"</td>"
-      +"<td class='"+(p>0?"pp":"pp0")+"'>"+p+"%</td>"
-      +"<td class='"+(mm>0?"pp":"mm")+"'>"+(mm>0?mm+"mm":"-")+"</td>"
+      +"<td class='uvv' id='uv-"+h+"' style='color:#aab'>·</td>"
+      +"<td>"+rain+"</td>"
       +"</tr>";
   });
   document.getElementById("tbl").innerHTML = html;
 }
 render();
 
-async function makeCanvas(){
-  return await html2canvas(document.getElementById("card"),
-    {scale:2, backgroundColor:null, useCORS:true});
+async function loadUV(){
+  try{
+    const url="https://api.open-meteo.com/v1/forecast?latitude=37.3833&longitude=126.6433&hourly=uv_index&timezone=Asia%2FSeoul&forecast_days=1";
+    const r=await fetch(url); const j=await r.json();
+    const times=j.hourly.time, vals=j.hourly.uv_index;
+    let peak=0, cautionH=[];
+    for(let i=0;i<times.length;i++){
+      const h=parseInt(times[i].slice(11,13),10);
+      const v=Math.round(vals[i]);
+      uvByHour[h]=v;
+      const cell=document.getElementById("uv-"+h);
+      if(cell){ const lc=uvLevel(v); cell.textContent=v; cell.style.color=lc[1]; cell.title=lc[0]; }
+      if(v>peak){peak=v;}
+    }
+    for(let h=6;h<=20;h++){ if((uvByHour[h]||0)>=6) cautionH.push(h); }
+    const plab=uvLevel(peak)[0];
+    let msg="☀️ 자외선 최대 "+peak+" ("+plab+")";
+    if(cautionH.length){ msg+=" · 주의 "+cautionH[0]+"~"+cautionH[cautionH.length-1]+"시"; }
+    document.getElementById("d-uv").textContent=msg;
+  }catch(e){
+    document.getElementById("d-uv").textContent="☀️ 자외선 정보를 불러오지 못했어요";
+    DATA.rows.forEach(r=>{const c=document.getElementById("uv-"+r[0]); if(c)c.textContent="-";});
+  }
 }
+loadUV();
+
+async function makeCanvas(){ return await html2canvas(document.getElementById("card"),{scale:2, backgroundColor:null, useCORS:true}); }
 async function saveImg(){
-  const c = await makeCanvas();
-  const a = document.createElement("a");
-  a.download = "송도_날씨_"+DATA.date.replace(/[^0-9]/g,"").slice(0,8)+".png";
-  a.href = c.toDataURL("image/png");
-  a.click();
+  const c=await makeCanvas();
+  const a=document.createElement("a");
+  a.download="송도_날씨_"+DATA.date.replace(/[^0-9]/g,"").slice(0,8)+".png";
+  a.href=c.toDataURL("image/png"); a.click();
 }
 async function openImg(){
-  const c = await makeCanvas();
-  const w = window.open();
+  const c=await makeCanvas();
+  const w=window.open();
   if(w){ w.document.write('<img src="'+c.toDataURL("image/png")+'" style="width:100%">'); }
 }
 </script>
