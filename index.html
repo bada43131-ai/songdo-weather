@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>송도 시간대별 날씨 카드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{ --navy:#1b2a4a; --temp:#ff7a45; --rain:#2f80ed; --sub:#7a8aa0; --ink:#1b2a4a; --sun:#f6b73c; }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",sans-serif;
+        background:#eef2f7; color:var(--ink); padding:14px; -webkit-text-size-adjust:100%; }
+  .wrap{ max-width:430px; margin:0 auto; }
+  .toolbar{ display:flex; gap:8px; margin-bottom:12px; }
+  .btn{ flex:1; border:none; border-radius:12px; padding:14px 10px; font-size:15px;
+        font-weight:700; color:#fff; background:var(--navy); cursor:pointer; }
+  .btn.alt{ background:#2f80ed; }
+  .hint{ font-size:12px; color:var(--sub); margin:10px 4px 0; line-height:1.5; }
+
+  /* ===== 캡처 대상 카드 ===== */
+  #card{ background:#fff; border-radius:18px; overflow:hidden;
+         box-shadow:0 6px 20px rgba(27,42,74,.10); }
+  .head{ background:var(--navy); color:#fff; padding:16px 18px; display:flex;
+         justify-content:space-between; align-items:center; }
+  .head .t1{ font-size:17px; font-weight:800; display:flex; align-items:center; gap:7px;}
+  .dot{ width:11px; height:11px; border-radius:50%; background:var(--sun); display:inline-block;}
+  .head .date{ font-size:12px; color:#aebfd6; margin-top:4px; }
+  .head .temps{ text-align:right; }
+  .head .temps b{ font-size:19px; }
+  .head .temps span{ display:block; font-size:11px; color:#aebfd6; }
+
+  .sec{ padding:14px 14px 6px; }
+  .sec .lab{ font-size:13px; font-weight:800; display:flex; align-items:center; gap:7px; margin-bottom:8px;}
+  .sec .lab i{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+
+  table{ width:100%; border-collapse:collapse; }
+  td{ text-align:center; padding:7px 2px; font-size:13px; border-bottom:1px solid #eef1f6; }
+  tr:last-child td{ border-bottom:none; }
+  .hr{ color:var(--sub); font-weight:700; }
+  .tp{ color:var(--temp); font-weight:800; }
+  .sky{ font-size:15px; }
+  .pp{ color:var(--rain); font-weight:700; }
+  .pp0{ color:var(--sub); }
+  .mm{ color:var(--sub); }
+  .foot{ padding:10px 16px 16px; font-size:11px; color:var(--sub); }
+  .note{ background:#f4f8ff; color:#2f6ad0; font-size:12px; font-weight:700;
+         padding:8px 12px; border-radius:10px; margin:0 14px 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="toolbar">
+    <button class="btn" onclick="saveImg()">📷 이미지로 저장</button>
+    <button class="btn alt" onclick="openImg()">🔍 새 탭에서 보기</button>
+  </div>
+
+  <div id="card">
+    <div class="head">
+      <div>
+        <div class="t1"><span class="dot"></span>인천 송도 시간대별 날씨</div>
+        <div class="date" id="d-date">2026년 6월 7일 (일)</div>
+      </div>
+      <div class="temps"><b id="d-temps">19° / 26°</b><span>최저 / 최고</span></div>
+    </div>
+
+    <div class="note" id="d-note">오늘 비 예보 없음 · 강수량 0mm</div>
+
+    <div class="sec">
+      <div class="lab"><i style="background:var(--temp)"></i>시간대별 기온 · 하늘 · 강수확률</div>
+      <table id="tbl"></table>
+    </div>
+
+    <div class="foot">자료: 기상청 동네예보(단기예보) · 송도 사나이 아침 브리핑</div>
+  </div>
+
+  <div class="hint">
+    • 모바일에서 <b>이미지로 저장</b>을 누르면 카드가 PNG로 다운로드됩니다. 카톡에서 사진 첨부로 기사님들께 공유하세요.<br>
+    • 저장이 안 되면 <b>새 탭에서 보기</b> → 이미지를 <b>길게 눌러 "이미지 저장"</b> 하시면 됩니다.
+  </div>
+</div>
+
+<script>
+// ===== 예보 데이터 (기상청 단기예보 / 인천 송도) =====
+const DATA = {
+  date: "2026년 6월 7일 (일)",
+  tmin: 19, tmax: 26,
+  note: "오늘 비 예보 없음 · 강수량 0mm",
+  // [시, 기온, 하늘(1맑음 3구름많음 4흐림), 강수확률%, 강수량mm]
+  rows: [
+    [6,19,1,0,0],[7,20,3,20,0],[8,21,3,20,0],[9,22,3,20,0],
+    [10,23,4,30,0],[11,24,4,30,0],[12,25,3,20,0],[13,25,3,20,0],
+    [14,26,4,30,0],[15,26,4,30,0],[16,26,4,30,0],[17,24,4,30,0],
+    [18,23,4,30,0],[19,22,4,30,0],[20,21,4,30,0],[21,20,4,30,0],[22,20,4,30,0]
+  ]
+};
+const SKY = {1:"☀️",3:"⛅",4:"☁️"};
+
+function render(){
+  document.getElementById("d-date").textContent = DATA.date;
+  document.getElementById("d-temps").textContent = DATA.tmin+"° / "+DATA.tmax+"°";
+  document.getElementById("d-note").textContent = DATA.note;
+  let html = "<tr><td class='hr'>시간</td><td class='hr'>기온</td><td class='hr'>하늘</td><td class='hr'>강수확률</td><td class='hr'>강수량</td></tr>";
+  DATA.rows.forEach(r=>{
+    const [h,t,s,p,mm]=r;
+    html += "<tr>"
+      +"<td class='hr'>"+h+"시</td>"
+      +"<td class='tp'>"+t+"°</td>"
+      +"<td class='sky'>"+(SKY[s]||"")+"</td>"
+      +"<td class='"+(p>0?"pp":"pp0")+"'>"+p+"%</td>"
+      +"<td class='"+(mm>0?"pp":"mm")+"'>"+(mm>0?mm+"mm":"-")+"</td>"
+      +"</tr>";
+  });
+  document.getElementById("tbl").innerHTML = html;
+}
+render();
+
+async function makeCanvas(){
+  return await html2canvas(document.getElementById("card"),
+    {scale:2, backgroundColor:null, useCORS:true});
+}
+async function saveImg(){
+  const c = await makeCanvas();
+  const a = document.createElement("a");
+  a.download = "송도_날씨_"+DATA.date.replace(/[^0-9]/g,"").slice(0,8)+".png";
+  a.href = c.toDataURL("image/png");
+  a.click();
+}
+async function openImg(){
+  const c = await makeCanvas();
+  const w = window.open();
+  if(w){ w.document.write('<img src="'+c.toDataURL("image/png")+'" style="width:100%">'); }
+}
+</script>
+</body>
+</html>
