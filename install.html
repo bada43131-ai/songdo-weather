@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>작업집계 설치</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:#f4f5f7;color:#222;margin:0;padding:16px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:460px;margin:0 auto}
+.hd{background:#FEE500;border-radius:14px;padding:16px 18px;margin-bottom:14px}
+.hd h1{margin:0;font-size:19px}
+.hd p{margin:6px 0 0;font-size:13px;color:#5a5300}
+.copybox{background:#222;border-radius:14px;padding:18px;text-align:center;margin-bottom:18px}
+.copybox b{color:#FEE500;font-size:15px}
+#copy{display:block;width:100%;margin-top:12px;padding:16px;border:0;border-radius:10px;background:#FEE500;color:#1a1a1a;font-size:18px;font-weight:800}
+#copy:active{transform:scale(.99)}
+#msg{color:#9be29b;font-size:13px;margin-top:10px;min-height:18px}
+.step{background:#fff;border:1px solid #e6e8eb;border-radius:14px;padding:16px;margin-bottom:12px;display:flex;gap:12px}
+.n{flex:none;width:30px;height:30px;border-radius:50%;background:#FEE500;color:#222;font-weight:800;display:flex;align-items:center;justify-content:center}
+.step .t{font-size:15px}
+.step .t b{color:#111}
+.k{display:inline-block;background:#f0f0f3;border:1px solid #ddd;border-radius:6px;padding:1px 7px;font-weight:700;font-size:14px}
+.hi{color:#d8480b;font-weight:800}
+.tip{background:#fff8d6;border:1px solid #f3e08a;border-radius:12px;padding:12px 14px;font-size:13px;color:#6b6300;margin-top:6px}
+.use{background:#fff;border:1px solid #e6e8eb;border-radius:14px;padding:16px;margin-top:14px;font-size:14px}
+.use h2{font-size:15px;margin:0 0 8px}
+.use li{margin:4px 0}
+textarea{width:100%;height:70px;font-size:11px;font-family:monospace;border:1px solid #ccc;border-radius:8px;padding:8px;color:#555;margin-top:8px}
+.small{font-size:12px;color:#888;text-align:center;margin-top:18px}
+</style></head>
+<body><div class="wrap">
+
+<div class="hd">
+<h1>🛵 내 작업집계 설치 (안드로이드)</h1>
+<p>운영웹에서 내 작업을 시간대별로 세고, 결과를 이미지로 카톡 공유까지. 딱 한 번만 등록하면 됩니다.</p>
+</div>
+
+<div class="copybox">
+<b>먼저 아래 버튼으로 코드를 복사하세요</b>
+<button id="copy">📋 코드 복사하기</button>
+<div id="msg"></div>
+</div>
+
+<div class="step"><div class="n">1</div><div class="t">크롬에서 <b>아무 사이트나</b> 연 다음, 주소창 옆 <span class="k">⋮</span>(점 3개) → <b>☆ 별표</b>를 눌러 북마크에 저장합니다.</div></div>
+
+<div class="step"><div class="n">2</div><div class="t"><span class="k">⋮</span> → <b>북마크</b> → 방금 저장한 북마크를 <span class="hi">길게 누르기</span> → <b>수정</b>(또는 편집)을 엽니다.</div></div>
+
+<div class="step"><div class="n">3</div><div class="t"><b>이름</b> 칸을 <span class="k">작업집계</span> 로 바꿉니다.</div></div>
+
+<div class="step"><div class="n">4</div><div class="t"><b>URL(주소)</b> 칸의 글자를 <span class="hi">전부 지우고</span>, 빈 칸을 <span class="hi">길게 눌러 '붙여넣기'</span> → <b>저장</b>. (1번에서 복사한 코드가 들어갑니다)</div></div>
+
+<div class="tip">붙여넣기가 안 되면, 맨 아래 코드 상자를 길게 눌러 직접 복사해도 됩니다.</div>
+
+<div class="step"><div class="n">5</div><div class="t"><b>사용할 때:</b> 운영웹(로그인 상태)에서 크롬 <b>주소창에</b> <span class="k">작업집계</span> 라고 입력 → 아래 뜨는 <b>'작업집계'</b> 북마크를 탭!</div></div>
+
+<div class="use">
+<h2>📊 사용법</h2>
+<ul>
+<li>화면 오른쪽 위에 집계창이 떠요.</li>
+<li><b>야간조(22시~9시)</b> / <b>주간조(8시~22시)</b> 버튼을 누르거나 시간을 직접 골라 <b>조회</b>.</li>
+<li><b>◀ 하루 전 / 하루 후 ▶</b> 로 날짜를 하루씩 이동.</li>
+<li><b>이미지로 복사</b> → 카톡 입력칸 길게 눌러 <b>붙여넣기</b>로 공유.</li>
+</ul>
+</div>
+
+<textarea id="code" readonly onclick="this.select()">javascript:(function(){var d=document,s=d.createElement('script');s.src='https://bada43131-ai.github.io/songdo-weather/kbw.js?'+Date.now();d.body.appendChild(s);})()</textarea>
+
+<div class="small">문제가 생기면 사장님께 알려주세요 🙂</div>
+
+</div>
+<script>
+document.getElementById('copy').onclick=function(){
+  var t=document.getElementById('code').value, m=document.getElementById('msg');
+  function done(){m.textContent='✓ 복사됐어요! 이제 2번부터 따라하세요';}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(function(){var c=document.getElementById('code');c.focus();c.select();try{document.execCommand('copy');done();}catch(e){m.textContent='아래 코드 상자를 길게 눌러 복사하세요';}});
+  }else{var c=document.getElementById('code');c.focus();c.select();try{document.execCommand('copy');done();}catch(e){m.textContent='아래 코드 상자를 길게 눌러 복사하세요';}}
+};
+</script>
+</body></html>
